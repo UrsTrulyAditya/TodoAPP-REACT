@@ -11,11 +11,11 @@ export const TodoApp = () => {
         setTodos(filtData);
     }
 
-    const updateToggle = (id: number) => {
+    const updateToggle = (id: number, updates: Partial<TodosType>) => {
         const todoItem = todos.find((e) => e.id === id);
         if (!todoItem) return;
         setTodos((prev) => prev.map((e) => {
-            return e.id === id ? { ...e, completed: !e.completed } : e;
+            return e.id === id ? { ...e, ...updates } : e;
         }));
     }
 
