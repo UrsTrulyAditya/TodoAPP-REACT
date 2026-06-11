@@ -1,10 +1,23 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import type { TodosType } from "../types/types";
 import { TodoList } from "./TodoList";
 
 export const TodoApp = () => {
     const [todo, setTodo] = useState<string>("");
-    const [todos, setTodos] = useState<TodosType[]>([]);
+    const [todos, setTodos] = useState<TodosType[]>(() => {
+        const data = localStorage.getItem("todos");
+        if (!data) return [];
+
+        try {
+            return JSON.parse(data);
+        } catch {
+            return [];
+        }
+    });
+
+    useEffect(() => {
+        localStorage.setItem("todos", JSON.stringify(todos));
+    }, [todos]);
 
     const deleteTodo = (id: number) => {
         const filtData = todos.filter(e => e.id !== id);
