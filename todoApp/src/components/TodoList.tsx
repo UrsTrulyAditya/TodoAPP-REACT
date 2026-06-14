@@ -6,7 +6,7 @@ export const TodoList = ({ data, updateTodo, deleteTodo }: Props<TodosType>) => 
     return (
         <ul>
             {data.map((e) => {
-                return <TodoItem todo={e} updateTodo={updateTodo} deleteTodo={deleteTodo} />
+                return <TodoItem key={e.id} todo={e} updateTodo={updateTodo} deleteTodo={deleteTodo} />
             })}
         </ul>
     );

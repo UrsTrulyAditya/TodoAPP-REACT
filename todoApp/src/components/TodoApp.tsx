@@ -1,42 +1,66 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import type { TodosType } from "../types/types";
 import { TodoList } from "./TodoList";
+import { getTodos, createTodo, updateTodo, deleteTodo as deleteT } from "../services/apis";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 
 export const TodoApp = () => {
     const [todo, setTodo] = useState<string>("");
-    const [todos, setTodos] = useState<TodosType[]>(() => {
-        const data = localStorage.getItem("todos");
-        if (!data) return [];
-
-        try {
-            return JSON.parse(data);
-        } catch {
-            return [];
+    // const [todos, setTodos] = useState<TodosType[]>([]);
+    // useEffect(() => {
+    //     fetchTodos();
+    // }, []);
+    const { data: todos, isLoading, error } = useQuery({
+        queryKey: ["todos"],
+        queryFn: getTodos,
+    })
+    const queryClient = useQueryClient();
+    const deleteMutation = useMutation({
+        mutationFn: deleteT,
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["todos"],
+            })
         }
     });
-
-    useEffect(() => {
-        localStorage.setItem("todos", JSON.stringify(todos));
-    }, [todos]);
-
     const deleteTodo = (id: number) => {
-        const filtData = todos.filter(e => e.id !== id);
-        setTodos(filtData);
+        deleteMutation.mutate(id);
     }
 
+    const updateMutation = useMutation({
+        mutationFn: ({
+            id,
+            updates
+        }: { id: number, updates: Partial<TodosType> }) => updateTodo(id, updates),
+
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["todos"]
+            })
+        }
+    });
     const updateToggle = (id: number, updates: Partial<TodosType>) => {
-        const todoItem = todos.find((e) => e.id === id);
-        if (!todoItem) return;
-        setTodos((prev) => prev.map((e) => {
-            return e.id === id ? { ...e, ...updates } : e;
-        }));
+        updateMutation.mutate({ id, updates });
     }
+    const createTodoMutation = useMutation({
+        mutationFn: createTodo,
 
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["todos"]
+            })
+        }
+    })
     const saveTodo = () => {
         if (!todo.trim()) return;
-        const item = { id: Date.now(), title: todo, completed: false };
-        setTodos((todos) => [...todos, item]);
-        setTodo("");
+        createTodoMutation.mutate({ id: Date.now(), title: todo, completed: false });
+
+    }
+    if (isLoading) {
+        return <h1>Loading...</h1>
+    }
+    if (error) {
+        return <h1>Something went wrong...</h1>
     }
     return (
         <div>

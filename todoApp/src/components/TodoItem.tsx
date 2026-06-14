@@ -28,7 +28,7 @@ export const TodoItem = ({ todo, updateTodo, deleteTodo }: ITodoItem) => {
 
                     </>
                 </>
-                : <li key={todo.id} style={todo.completed ? { textDecoration: "line-through" } : {}}>{todo.title}
+                : <li style={todo.completed ? { textDecoration: "line-through" } : {}}>{todo.title}
                     <button onClick={() => setEdited(true)}>Edit</button></li>}
             {
                 !isEdit &&
